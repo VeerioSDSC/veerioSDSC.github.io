@@ -3,84 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Research Data Portal</title>
-    
+    <title>@globus/sdk Demo</title>
     <script src="https://unpkg.com/@globus/sdk/umd/globus.production.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    </head>
+  </head>
   <body>
-    <h1>Research Data Portal w/ JupyterLite</h1>
-    <style>
-        h1{
-            background-color: #90EE90; /* Light green background */
-            color: #000; /* Black text color */
-            text-align: center; /* Centered text */
-            padding: 20px; /* Padding around the text */
-            font-family: Arial, sans-serif; /* Font family */
-            font-size: 24px; /* Font size */
-            font-weight: bold; /* Bold text */
-        }
-    </style>
-
+    <h1>@globus/sdk</h1>
+    <p>This page demonstrates how to incorporate a <a href="https://g-062a3c.0ed28.75bc.data.globus.org/allusers/data.json">JSON file</a>
+      <a href="https://app.globus.org/file-manager?origin_id=385d3079-5121-40bc-a52f-055296497631&origin_path=%2Fallusers%2F">hosted in a Globus Guest Collection</a> with restricted access.
+    </p>
+    <p>
+      You will need to <a href="https://app.globus.org/groups/260da91f-3496-11ed-b941-972795fc9504/join">join the Serverless Data Users Globus Group</a> to view the sample chart.
+    </p>
     <button id="sign-in" style="display: none">Sign In</button>
     <button id="sign-out"  style="display: none">Sign Out</button>
-    <style>
-        button {
-            background-color: #4CAF50; /* Green background */
-            color: white; /* White text */
-            padding: 15px 30px; /* Padding for the button */
-            text-align: center; /* Centered text */
-            text-decoration: none; /* No underline */
-            display: inline-block;
-            font-size: 20px; /* Font size */
-            position: fixed;
-            left: 50%;
-            top: 20%;
-            margin: 10px;
-            border: none; /* No border */
-            border-radius: 5px; /* Rounded corners */
-            box-shadow: 0 4px #999; /* Shadow effect */
-            cursor: pointer; /* Pointer cursor on hover */
-            transition: background-color 0.3s, box-shadow 0.3s;
-            /* Transition effects */
-        }
-
-        button:hover {
-            background-color: #45a049; /* Darker green on hover */
-            box-shadow: 0 6px #666; /* Larger shadow on hover */
-        }
-
-        button:active {
-            background-color: #3e8e41; /* Even darker green on click */
-            box-shadow: 0 2px #666; /* Smaller shadow on click */
-            transform: translateY(2px); /* Slight movement on click */
-        }
-    </style>
-    <img src = "logo.png" width= "200" height = "200">
-    <style>
-    	img{
-        position: fixed;
-        left: 50%;
-        bottom: 20%;
-        }
-    </style>
-    <h2> Portal made by: Veer Chopra, Eshaan Kumar, and Saathvik Gampa, mentored by Dr. Rick Wagner</h2>
-    <style>
-    	h2{
-        position: fixed;
-        left: 10%;
-        bottom: 0%;
-        }
-    </style>
-  </head>
     <code><pre id="user-information"></pre></code>
- 
-
-    <div style="width: 50%">
-     
-
-      
+    <div id="canvas">
+      <h2>Sample Chart with Restricted Data</h2>
+      <p>Plotted using <a href="https://www.chartjs.org/docs/latest/getting-started/">Chart.js</a>.
+      <canvas id="chart"></canvas>
     </div>
+    <div style="width: 50%">
+      <h2>How this Works</h2>
+      <ol>
+	<li>Research logs in to Globus and Globus Auth returns an OAuth access token which is stored in the browser.</li>
+	<li>Once authenticated, a script in this page requests a JSON file from a Globus collection over HTTPS. Globus checks that the researcher is a member of the <a href="https://app.globus.org/groups/260da91f-3496-11ed-b941-972795fc9504/join">Serverless Data Users Globus Group</a>. If they are, the collection returns the file.</li>
+	<li>When the JSON file is loaded in the browser <a href="https://www.chartjs.org/docs/latest/getting-started/">Chart.js</a> is  used to render the bar chart.</li>
+      </ol>
+    </div>
+    <img src="Architecture.png" style="border: 5px solid #555" width="50%" height="auto"/>
     
     <script>
       /* Collection with the restricted data */
@@ -89,15 +40,7 @@
       const data_url = 'https://g-062a3c.0ed28.75bc.data.globus.org/allusers/data.json';
       /**
        * Adds some basic logging configuration for the SDK.
-       * This is not required, but can be helpful for debugging.
-       */
-      globus.logger.setLogger(console);
-      globus.logger.setLogLevel('DEBUG');
-      /**
-       * This will create an AuthorizationManager that will track your authorization state.
-       * - Stored in localStorage by default.
-       */
-      const manager = globus.authorization.create({
+	@@ -55,7 +55,7 @@ <h2>How this Works</h2>
           /**
            * Your registered Globus Application client ID.
            */
@@ -131,14 +74,12 @@
 	  CANVAS: document.getElementById('canvas'),
 	  CHART: document.getElementById('chart'),
       };
-
       UI.SIGN_IN.addEventListener('click', () => {
           /**
            * This will redirect the user to the Globus Auth login page.
            */
           manager.login();
       });
-
       UI.SIGN_OUT.addEventListener('click', () => {
           /**
            * This will revoke the user's tokens and clear the stored state.
@@ -160,7 +101,6 @@
 	  request.onreadystatechange = function() {
 	      if (this.readyState == 4 && this.status == 200) {
 		  const data = JSON.parse(request.responseText);
-
 		  /* https://www.chartjs.org/docs/latest/getting-started/ */
 		  new Chart(UI.CHART, {
 		      type: 'bar',
